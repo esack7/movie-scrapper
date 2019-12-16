@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^8.2.0",
-    "puppeteer": "^2.0.0"
+    "puppeteer": "^2.0.0",
+    "superagent": "^5.1.2"
   }
 }
