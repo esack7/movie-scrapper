@@ -13,7 +13,7 @@ function writeToFile (data, fileName) {
     const stringifiedData = JSON.stringify(data);
     fs.writeFile(`${fileName}.json`, stringifiedData, 'utf8', function (err) {
         if (err) {
-            console.log("An error occured while writing JSON Object to File.");
+            console.log(`An error occured while writing ${fileName} JSON file.`);
             return console.log(err);
         }
 
