@@ -6,32 +6,34 @@ require("dotenv").config();
 const username = process.env.USRNAME;
 const password = process.env.PSWORD;
 const loginURL = process.env.LOGINURL;
-const cookiesPath = "./cookies.json";
+// const cookiesPath = "./cookies.json";
 // const current = Date.now();
 // let reauthorize = false;
 
-function cookiesExist(path) {
-    return new Promise((resolve, reject) => {
-        fs.access(path,fs.constants.F_OK, (err) => {
-            if(err) {
-                return reject(err);
-            }
-            console.log('It exists in promise')
-            resolve(true);
-        })
-    })
-}
+// function cookiesExist(path) {
+//     return new Promise((resolve, reject) => {
+//         fs.access(path,fs.constants.F_OK, (err) => {
+//             if(err) {
+//                 return reject(err);
+//             }
+//             console.log('It exists in promise')
+//             resolve(true);
+//         })
+//     })
+// }
 
 function writeToFile (data, fileName) {
-    const stringifiedData = JSON.stringify(data);
-    fs.writeFile(`${fileName}.json`, stringifiedData, 'utf8', function (err) {
-        if (err) {
-            console.log(`An error occured while writing ${fileName} JSON file.`);
-            return console.log(err);
-        }
-
-        console.log(`${fileName} JSON file has been saved.`);
-    });
+    return new Promise((resolve, reject) => {
+        const stringifiedData = JSON.stringify(data);
+        fs.writeFile(`${fileName}.json`, stringifiedData, 'utf8', function (err) {
+            if (err) {
+                console.log(`An error occured while writing ${fileName} JSON file.`);
+                return reject(err);
+            }
+            console.log(`${fileName} JSON file has been saved.`);
+            resolve();
+        });
+    })
 }
 
 (async () => {
