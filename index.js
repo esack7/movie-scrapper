@@ -10,51 +10,95 @@ const groupURL = process.env.GROUPURL;
 const postURL = process.env.POSTURL;
 
 function writeToFile (data, fileName) {
-    const stringifiedData = JSON.stringify(data);
-    fs.writeFile(`${fileName}.json`, stringifiedData, 'utf8', function (err) {
-        if (err) {
-            console.log(`An error occured while writing ${fileName} JSON file.`);
-            return console.log(err);
-        }
+    return new Promise((resolve, reject) => {
+        const stringifiedData = JSON.stringify(data);
+        fs.writeFile(`${fileName}.json`, stringifiedData, 'utf8', function (err) {
+            if (err) {
+                console.log(`An error occured while writing ${fileName} JSON file.`);
+                return reject(err);
+            }
+            console.log(`${fileName} JSON file has been saved.`);
+            resolve();
+        });
+    })
+}
 
-        console.log(`${fileName} JSON file has been saved.`);
+function makeGetRequest (postURL, cookieString, csrfToken) {
+    return new Promise((resolve, reject) => {
+        client.get(loginURL + postURL)
+            .set("Cookie", cookieString)
+            .set('x-csrf-token', `${csrfToken}`)
+            .then(res => {
+                // console.log(res.body)
+                resolve(res.body);
+            })
+            .catch(err => {
+                console.error(`Error in posts request:\n${err}`);
+                return reject();
+            })
     });
+}
+
+function cookiesExist(path) {
+    return new Promise((resolve, reject) => {
+        fs.access(path,fs.constants.F_OK, (err) => {
+            if(err) {
+                return resolve(false);
+            }
+            // console.log('It exists in promise')
+            resolve(true);
+        })
+    })
 }
 
 (async () => {
     let cookies;
     let csrfToken;
     let cookieString = '';
-    const browser = await puppeteer.launch({ headless: false});
-    const pages = await browser.pages()
-    const page = pages[0];
+    const cookiesPath = "./cookies.json";
 
+    let cookieExist = await cookiesExist(cookiesPath);
+
+    if(!cookieExist) {
+        const browser = await puppeteer.launch({ headless: false});
+        const pages = await browser.pages()
+        const page = pages[0];
     
-    await page.goto(loginURL, { waitUntil: 'domcontentloaded' });
-    await page.waitFor('input[name=username]');
-    await page.click('#login-fake-btn');
-    await page.type('#email', username);
-    await page.type('#password', password);
-    await page.waitFor(3000);
-    await page.click('button.btn-login');
-    await page.waitForNavigation();
-
-    cookies = await page.cookies();
-    writeToFile(cookies, 'cookies')
-    cookies.map(ele => {
-        if (ele.name === "csrf-token") {
-            csrfToken = ele.value;
-        }
-        cookieString = cookieString + `${ele.name}=${ele.value};`;
-    })
-
-    client.get(loginURL + postURL)
-        .set("Cookie", cookieString)
-        .set('x-csrf-token', `${csrfToken}`)
-        .then(res => {
-            writeToFile(res.body, 'postFeed');
+        
+        await page.goto(loginURL, { waitUntil: 'domcontentloaded' });
+        await page.waitFor('input[name=username]');
+        await page.click('#login-fake-btn');
+        await page.type('#email', username);
+        await page.type('#password', password);
+        await page.waitFor(3000);
+        await page.click('button.btn-login');
+        await page.waitForNavigation();
+    
+        cookies = await page.cookies();
+        writeToFile(cookies, 'cookies')
+    } else {
+        cookies = require(cookiesPath);
+    
+        cookies.map(ele => {
+            if (ele.name === "csrf-token") {
+                csrfToken = ele.value;
+            }
+            cookieString = cookieString + `${ele.name}=${ele.value};`;
         })
-        .catch(err => console.error(`Error in posts request:\n${err}`))
+        
+        let newURL = postURL;
+        let postsArray = [];
+        for(let i = 0; i < 10; i++) {
+            console.log("Token: ", csrfToken)
+            let post = await makeGetRequest(newURL, cookieString, csrfToken)
+            newURL = post._links.nextPage.href;
+            postsArray.push(post);
+        }
+    
+        await writeToFile(postsArray, 'postFeedArray');
+    }
+
+
     })()
     
         
