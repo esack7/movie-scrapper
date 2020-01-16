@@ -10,12 +10,12 @@ const searchRegex = new RegExp(searchTerm, 'i');
 const now = getTime(new Date());
 data.map(post => {
   post.feed.map(ele => {
+    const diffHours = differenceInHours(now, ele.createdAt * 1000);
+    const diffMinutes = differenceInMinutes(now, ele.createdAt * 1000);
     ele.text.split("\n").map(line => {
       if (!!line.match(searchRegex)) {
-        const hours = differenceInHours(now, ele.createdAt * 1000);
-        const minutes = differenceInMinutes(now, ele.createdAt * 1000);
         console.log(line);
-        console.log(`${hours} hours ${minutes - (hours * 60)} minutes old`);
+        console.log(`${diffHours} hours ${diffMinutes - (diffHours * 60)} minutes old`);
         console.log(`${loginURL}${groupURL}/profile/${ele.userId}
         `)
       }
