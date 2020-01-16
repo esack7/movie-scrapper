@@ -6,7 +6,6 @@ require('dotenv').config();
 const username = process.env.USRNAME;
 const password = process.env.PSWORD;
 const loginURL = process.env.LOGINURL;
-const groupURL = process.env.GROUPURL;
 const postURL = process.env.POSTURL;
 
 function writeToFile (data, fileName) {
@@ -29,7 +28,6 @@ function makeGetRequest (postURL, cookieString, csrfToken) {
             .set("Cookie", cookieString)
             .set('x-csrf-token', `${csrfToken}`)
             .then(res => {
-                // console.log(res.body)
                 resolve(res.body);
             })
             .catch(err => {
@@ -45,7 +43,6 @@ function cookiesExist(path) {
             if(err) {
                 return resolve(false);
             }
-            // console.log('It exists in promise')
             resolve(true);
         })
     })
