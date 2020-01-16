@@ -5,7 +5,7 @@ require('dotenv').config();
 const loginURL = process.env.LOGINURL;
 const groupURL = process.env.GROUPURL;
 
-const searchTerm = 'back to the future';
+const searchTerm = 'ad astra';
 const searchRegex = new RegExp(searchTerm, 'i');
 const now = getTime(new Date());
 data.map(post => {

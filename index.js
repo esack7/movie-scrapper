@@ -28,7 +28,6 @@ function makeGetRequest (postURL, cookieString, csrfToken) {
             .set("Cookie", cookieString)
             .set('x-csrf-token', `${csrfToken}`)
             .then(res => {
-                // console.log(res.body)
                 resolve(res.body);
             })
             .catch(err => {
@@ -44,7 +43,6 @@ function cookiesExist(path) {
             if(err) {
                 return resolve(false);
             }
-            // console.log('It exists in promise')
             resolve(true);
         })
     })
