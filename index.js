@@ -6,7 +6,6 @@ require('dotenv').config();
 const username = process.env.USRNAME;
 const password = process.env.PSWORD;
 const loginURL = process.env.LOGINURL;
-const groupURL = process.env.GROUPURL;
 const postURL = process.env.POSTURL;
 
 function writeToFile (data, fileName) {
