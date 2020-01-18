@@ -48,31 +48,35 @@ function cookiesExist(path) {
     })
 }
 
-(async () => {
+async function main() {
     let cookies;
     let csrfToken;
     let cookieString = '';
     const cookiesPath = "./cookies.json";
-
+    
     let cookieExist = await cookiesExist(cookiesPath);
-
+    
     if(!cookieExist) {
         const browser = await puppeteer.launch({ headless: false});
+        console.log("Starting Puppeteer")
         const pages = await browser.pages()
         const page = pages[0];
     
         
         await page.goto(loginURL, { waitUntil: 'domcontentloaded' });
+        console.log("Loading Page");
         await page.waitFor('input[name=username]');
         await page.click('#login-fake-btn');
         await page.type('#email', username);
         await page.type('#password', password);
+        console.log("Waiting to log in")
         await page.waitFor(3000);
         await page.click('button.btn-login');
         await page.waitForNavigation();
     
         cookies = await page.cookies();
-        writeToFile(cookies, 'cookies')
+        await writeToFile(cookies, 'cookies');
+        main();
     } else {
         cookies = require(cookiesPath);
     
@@ -94,8 +98,8 @@ function cookiesExist(path) {
     
         await writeToFile(postsArray, 'postFeedArray');
     }
+    return null;
+}
 
-
-    })()
-    
+main();    
         
