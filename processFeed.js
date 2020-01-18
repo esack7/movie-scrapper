@@ -1,11 +1,16 @@
 const { getTime, differenceInMinutes, differenceInHours } = require('date-fns');
 const data = require("./postFeedArray.json");
 require('dotenv').config();
-
+const searchTermArray = process.argv;
 const loginURL = process.env.LOGINURL;
 const groupURL = process.env.GROUPURL;
 
-const searchTerm = 'ad astra';
+let searchTerm = '';
+for(let i = 2; i < searchTermArray.length; i++) {
+  searchTerm = `${searchTerm} ${searchTermArray[i]}`
+  searchTerm = searchTerm.trim();
+}
+
 const searchRegex = new RegExp(searchTerm, 'i');
 const now = getTime(new Date());
 data.map(post => {
@@ -15,7 +20,7 @@ data.map(post => {
     ele.text.split("\n").map(line => {
       if (!!line.match(searchRegex)) {
         console.log(line);
-        console.log(`${diffHours} hours ${diffMinutes - (diffHours * 60)} minutes old`);
+        console.log(`Posted ${diffHours} hours ${diffMinutes - (diffHours * 60)} minutes ago`);
         console.log(`${loginURL}${groupURL}/profile/${ele.userId}
         `)
       }
