@@ -22,6 +22,19 @@ function writeToFile (data, fileName) {
     })
 }
 
+function deleteCookies(path, fileName) {
+    return new Promise((resolve, reject) => {
+        fs.unlink(path, err => {
+            if (err) {
+                console.log(`An error occured while deleting ${fileName} file.`);
+                return reject(err);
+            }
+            console.log(`${fileName} has been deleted.`);
+            resolve();
+        })
+    })
+}
+
 function makeGetRequest (postURL, cookieString, csrfToken) {
     return new Promise((resolve, reject) => {
         client.get(loginURL + postURL)
@@ -44,6 +57,18 @@ function cookiesExist(path) {
                 return resolve(false);
             }
             resolve(true);
+        })
+    })
+}
+
+function readJSONFile(path) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path,(err, data) => {
+            if(err) {
+                console.log(`There was an error reading json at ${path}.`);
+                return reject(err);
+            }
+            resolve(JSON.parse(data));
         })
     })
 }
@@ -78,7 +103,8 @@ async function main() {
         await writeToFile(cookies, 'cookies');
         main();
     } else {
-        cookies = require(cookiesPath);
+        cookies = await readJSONFile(cookiesPath);
+        let stop = false;
     
         cookies.map(ele => {
             if (ele.name === "csrf-token") {
@@ -89,17 +115,25 @@ async function main() {
         
         let newURL = postURL;
         let postsArray = [];
-        for(let i = 0; i < 10; i++) {
+        for(let i = 0; i < 11; i++) {
+            stop = false;
             console.log("Token: ", csrfToken)
-            let post = await makeGetRequest(newURL, cookieString, csrfToken)
+            let post = await makeGetRequest(newURL, cookieString, csrfToken).catch(err => {
+                console.log('For loop needs to stop!');
+                stop = true;
+            })
+            if(stop) {
+                await deleteCookies(cookiesPath, 'cookies.json');
+                break;
+            }
             newURL = post._links.nextPage.href;
             postsArray.push(post);
         }
-    
-        await writeToFile(postsArray, 'postFeedArray');
+        stop ? main() : await writeToFile(postsArray, 'postFeedArray').then(() => {
+            process.exit();
+        });
     }
-    return null;
+    return null
 }
 
-main();    
-        
+main();
