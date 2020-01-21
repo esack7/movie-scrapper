@@ -1,77 +1,8 @@
-const puppeteer = require('puppeteer');
-const client = require('superagent');
-const fs = require('fs');
+const { cookiesExist, readJSONFile, makeGetRequest, deleteCookies, writeToFile } = require('./utils.js');
+const auth = require('./auth.js');
 require('dotenv').config();
 
-const username = process.env.USRNAME;
-const password = process.env.PSWORD;
-const loginURL = process.env.LOGINURL;
 const postURL = process.env.POSTURL;
-
-function writeToFile (data, fileName) {
-    return new Promise((resolve, reject) => {
-        const stringifiedData = JSON.stringify(data);
-        fs.writeFile(`${fileName}.json`, stringifiedData, 'utf8', function (err) {
-            if (err) {
-                console.log(`An error occured while writing ${fileName} JSON file.`);
-                return reject(err);
-            }
-            console.log(`${fileName} JSON file has been saved.`);
-            resolve();
-        });
-    })
-}
-
-function deleteCookies(path, fileName) {
-    return new Promise((resolve, reject) => {
-        fs.unlink(path, err => {
-            if (err) {
-                console.log(`An error occured while deleting ${fileName} file.`);
-                return reject(err);
-            }
-            console.log(`${fileName} has been deleted.`);
-            resolve();
-        })
-    })
-}
-
-function makeGetRequest (postURL, cookieString, csrfToken) {
-    return new Promise((resolve, reject) => {
-        client.get(loginURL + postURL)
-            .set("Cookie", cookieString)
-            .set('x-csrf-token', `${csrfToken}`)
-            .then(res => {
-                resolve(res.body);
-            })
-            .catch(err => {
-                console.error(`Error in posts request:\n${err}`);
-                return reject();
-            })
-    });
-}
-
-function cookiesExist(path) {
-    return new Promise((resolve, reject) => {
-        fs.access(path,fs.constants.F_OK, (err) => {
-            if(err) {
-                return resolve(false);
-            }
-            resolve(true);
-        })
-    })
-}
-
-function readJSONFile(path) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(path,(err, data) => {
-            if(err) {
-                console.log(`There was an error reading json at ${path}.`);
-                return reject(err);
-            }
-            resolve(JSON.parse(data));
-        })
-    })
-}
 
 async function main() {
     let cookies;
@@ -82,25 +13,7 @@ async function main() {
     let cookieExist = await cookiesExist(cookiesPath);
     
     if(!cookieExist) {
-        const browser = await puppeteer.launch({ headless: false});
-        console.log("Starting Puppeteer")
-        const pages = await browser.pages()
-        const page = pages[0];
-    
-        
-        await page.goto(loginURL, { waitUntil: 'domcontentloaded' });
-        console.log("Loading Page");
-        await page.waitFor('input[name=username]');
-        await page.click('#login-fake-btn');
-        await page.type('#email', username);
-        await page.type('#password', password);
-        console.log("Waiting to log in")
-        await page.waitFor(3000);
-        await page.click('button.btn-login');
-        await page.waitForNavigation();
-    
-        cookies = await page.cookies();
-        await writeToFile(cookies, 'cookies');
+        await auth();
         main();
     } else {
         cookies = await readJSONFile(cookiesPath);
@@ -119,7 +32,7 @@ async function main() {
             stop = false;
             console.log("Token: ", csrfToken)
             let post = await makeGetRequest(newURL, cookieString, csrfToken).catch(err => {
-                console.log('For loop needs to stop!');
+                console.error('Here is the error in GET request:\n', err)
                 stop = true;
             })
             if(stop) {
