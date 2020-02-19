@@ -1,19 +1,17 @@
 {
-  "name": "movie-scrapper",
-  "version": "1.0.0",
-  "description": "Scrapper using puppeteer",
-  "main": "index.js",
-  "scripts": {
-    "start": "node ./index.js",
-    "process": "node ./processFeed.js",
-    "auth": "node ./auth.js"
-  },
-  "author": "Isaac Heist",
-  "license": "MIT",
-  "dependencies": {
-    "date-fns": "^2.8.1",
-    "dotenv": "^8.2.0",
-    "puppeteer": "^2.0.0",
-    "superagent": "^5.1.2"
-  }
+	"name": "movie-scrapper",
+	"version": "1.0.0",
+	"description": "Scrapper using puppeteer",
+	"main": "index.js",
+	"scripts": {
+		"start": "node ./index.js"
+	},
+	"author": "Isaac Heist",
+	"license": "MIT",
+	"dependencies": {
+		"date-fns": "^2.8.1",
+		"dotenv": "^8.2.0",
+		"puppeteer": "^2.0.0",
+		"superagent": "^5.1.2"
+	}
 }

@@ -1,52 +1,53 @@
-const { cookiesExist, readJSONFile, makeGetRequest, deleteCookies, writeToFile } = require('./utils.js');
+const { cookiesExist, readJSONFile, deleteCookies, readInput } = require('./utils.js');
+const scrapeData = require('./scrapeData.js');
 const auth = require('./auth.js');
-require('dotenv').config();
-
-const postURL = process.env.POSTURL;
+const processFeed = require('./processFeed.js');
 
 async function main() {
-    let cookies;
-    let csrfToken;
-    let cookieString = '';
-    const cookiesPath = "./cookies.json";
-    
-    let cookieExist = await cookiesExist(cookiesPath);
-    
-    if(!cookieExist) {
+    const cookiesPath = './cookies.json';
+    const cookieExist = await cookiesExist(cookiesPath);
+
+    if (!cookieExist) {
         await auth();
         main();
     } else {
-        cookies = await readJSONFile(cookiesPath);
-        let stop = false;
-    
-        cookies.map(ele => {
-            if (ele.name === "csrf-token") {
-                csrfToken = ele.value;
+        try {
+            const cookies = await readJSONFile(cookiesPath);
+            let input = '';
+            let csrfToken;
+            let cookieString = '';
+
+            cookies.map(ele => {
+                if (ele.name === 'csrf-token') {
+                    csrfToken = ele.value;
+                }
+                cookieString += `${ele.name}=${ele.value};`;
+                return null;
+            });
+
+            while (input.toLowerCase() !== 'q') {
+                process.stdout.write(
+                    '\nWhat do you want to do?:\n(s - search, r - scrape data, l - log out, q - quit)\n'
+                );
+                input = await readInput();
+                if (input === 's') {
+                    process.stdout.write('What do you want to search for?\n');
+                    const searchTerm = await readInput();
+                    await processFeed(searchTerm);
+                }
+                if (input === 'r') {
+                    await scrapeData(csrfToken, cookieString);
+                }
+                if (input === 'l') {
+                    await deleteCookies(cookiesPath, 'cookies.json');
+                }
             }
-            cookieString = cookieString + `${ele.name}=${ele.value};`;
-        })
-        
-        let newURL = postURL;
-        let postsArray = [];
-        for(let i = 0; i < 11; i++) {
-            stop = false;
-            console.log("Token: ", csrfToken)
-            let post = await makeGetRequest(newURL, cookieString, csrfToken).catch(err => {
-                console.error('Here is the error in GET request:\n', err)
-                stop = true;
-            })
-            if(stop) {
-                await deleteCookies(cookiesPath, 'cookies.json');
-                break;
-            }
-            newURL = post._links.nextPage.href;
-            postsArray.push(post);
-        }
-        stop ? main() : await writeToFile(postsArray, 'postFeedArray').then(() => {
             process.exit();
-        });
+        } catch (error) {
+            console.error('Error in Index:\n', error);
+        }
     }
-    return null
+    return null;
 }
 
 main();
