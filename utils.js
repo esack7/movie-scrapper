@@ -1,22 +1,19 @@
 const fs = require('fs');
 const client = require('superagent');
-const readline = require('readline');
 require('dotenv').config();
-
-const reader = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
 
 const loginURL = process.env.LOGINURL;
 
 module.exports = {
-    readInput: () =>
+    readInput: (reader) =>
         new Promise((resolve, reject) => {
-            reader.on('line', input => {
-                // reader.close();
-                resolve(input);
-            });
+            try {
+                reader.on('line', input => {
+                    resolve(input);
+                });
+            } catch (err) {
+                reject(err)
+            }
         }),
     writeToFile: (data, fileName) =>
         new Promise((resolve, reject) => {
