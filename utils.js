@@ -5,14 +5,14 @@ require('dotenv').config();
 const loginURL = process.env.LOGINURL;
 
 module.exports = {
-    readInput: (reader) =>
+    readInput: reader =>
         new Promise((resolve, reject) => {
             try {
                 reader.on('line', input => {
                     resolve(input);
                 });
             } catch (err) {
-                reject(err)
+                reject(err);
             }
         }),
     writeToFile: (data, fileName) =>
