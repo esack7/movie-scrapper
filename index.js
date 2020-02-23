@@ -2,6 +2,12 @@ const { cookiesExist, readJSONFile, deleteCookies, readInput } = require('./util
 const scrapeData = require('./scrapeData.js');
 const auth = require('./auth.js');
 const processFeed = require('./processFeed.js');
+const readline = require('readline');
+
+const lineReader = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
 
 async function main() {
     const cookiesPath = './cookies.json';
@@ -29,10 +35,10 @@ async function main() {
                 process.stdout.write(
                     '\nWhat do you want to do?:\n(s - search, r - scrape data, l - log out, q - quit)\n'
                 );
-                input = await readInput();
+                input = await readInput(lineReader);
                 if (input === 's') {
                     process.stdout.write('What do you want to search for?\n');
-                    const searchTerm = await readInput();
+                    const searchTerm = await readInput(lineReader);
                     await processFeed(searchTerm);
                 }
                 if (input === 'r') {
