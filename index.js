@@ -1,8 +1,8 @@
+const readline = require('readline');
 const { cookiesExist, readJSONFile, deleteCookies, readInput } = require('./utils.js');
 const scrapeData = require('./scrapeData.js');
 const auth = require('./auth.js');
 const processFeed = require('./processFeed.js');
-const readline = require('readline');
 
 const lineReader = readline.createInterface({
     input: process.stdin,
