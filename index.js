@@ -1,5 +1,5 @@
 const readline = require('readline');
-const { cookiesExist, readJSONFile, deleteCookies, readInput } = require('./utils.js');
+const { fileExists, readJSONFile, deleteCookies, readInput } = require('./utils.js');
 const scrapeData = require('./scrapeData.js');
 const auth = require('./auth.js');
 const processFeed = require('./processFeed.js');
@@ -11,7 +11,7 @@ const lineReader = readline.createInterface({
 
 async function main() {
     const cookiesPath = './cookies.json';
-    const cookieExist = await cookiesExist(cookiesPath);
+    const cookieExist = await fileExists(cookiesPath);
 
     if (!cookieExist) {
         await auth();

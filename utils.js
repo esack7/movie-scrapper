@@ -52,7 +52,7 @@ module.exports = {
                     return reject();
                 });
         }),
-    cookiesExist: path =>
+    fileExists: path =>
         new Promise((resolve, reject) => {
             fs.access(path, fs.constants.F_OK, err => {
                 if (err) {
