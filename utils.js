@@ -40,8 +40,6 @@ module.exports = {
         }),
     makeGetRequest: (postURL, cookieString, csrfToken) =>
         new Promise((resolve, reject) => {
-            console.log('Cookie String: ', cookieString);
-            console.log('CSRF: ', csrfToken);
             client
                 .get(domainURL + postURL)
                 .set('Cookie', cookieString)
