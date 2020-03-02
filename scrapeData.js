@@ -9,6 +9,7 @@ module.exports = async function(csrfToken, cookieString) {
     const postsArrayExists = await fileExists(filePath);
     console.log('Array exists? ', postsArrayExists);
     const postsArray = [];
+    console.log('New URL: ', newURL);
     process.stdout.write(`Accessing Posts Data`);
     for (let i = 0; i < 11; i++) {
         process.stdout.write(` .`);

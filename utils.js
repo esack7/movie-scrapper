@@ -2,7 +2,7 @@ const fs = require('fs');
 const client = require('superagent');
 require('dotenv').config();
 
-const loginURL = process.env.LOGINURL;
+const domainURL = process.env.DOMAINURL;
 
 module.exports = {
     readInput: reader =>
@@ -40,8 +40,10 @@ module.exports = {
         }),
     makeGetRequest: (postURL, cookieString, csrfToken) =>
         new Promise((resolve, reject) => {
+            console.log('Cookie String: ', cookieString);
+            console.log('CSRF: ', csrfToken);
             client
-                .get(loginURL + postURL)
+                .get(domainURL + postURL)
                 .set('Cookie', cookieString)
                 .set('x-csrf-token', `${csrfToken}`)
                 .then(res => {
