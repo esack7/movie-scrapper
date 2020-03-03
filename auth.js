@@ -27,7 +27,7 @@ module.exports = async function() {
     await page.type('#password', password);
 
     process.stdout.write('Waiting to log in\n');
-    await page.waitFor('button[type=submit]');
+    await page.waitFor(3000);
     await page.click('button[type=submit]');
     process.stdout.write('Waiting for cookies. This can take some time...\n');
     let currentURL = await page.mainFrame().url();
