@@ -2,7 +2,7 @@ const { getTime, differenceInMinutes, differenceInHours } = require('date-fns');
 const { readJSONFile } = require('./utils.js');
 require('dotenv').config();
 
-const loginURL = process.env.LOGINURL;
+const domainURL = process.env.DOMAINURL;
 const groupURL = process.env.GROUPURL;
 
 module.exports = async function(searchTerm) {
@@ -17,7 +17,7 @@ module.exports = async function(searchTerm) {
                 if (line.match(searchRegex)) {
                     process.stdout.write(`\n${line}\n`);
                     process.stdout.write(`Posted ${diffHours} hours ${diffMinutes - diffHours * 60} minutes ago\n`);
-                    process.stdout.write(`${loginURL}${groupURL}/profile/${ele.userId}\n`);
+                    process.stdout.write(`${domainURL}${groupURL}/profile/${ele.userId}\n`);
                 }
                 return null;
             });
