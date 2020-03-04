@@ -4,7 +4,7 @@ require('dotenv').config();
 
 let username = process.env.USRNAME;
 let password = process.env.PSWORD;
-const loginURL = process.env.LOGINURL;
+const domainURL = process.env.DOMAINURL;
 
 module.exports = async function() {
     if (!username) {
@@ -19,20 +19,35 @@ module.exports = async function() {
     process.stdout.write('Starting Puppeteer\n');
     const pages = await browser.pages();
     const page = pages[0];
-    await page.goto(loginURL, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${domainURL}/login`);
 
     process.stdout.write('Loading Page\n');
-    await page.waitFor('input[name=username]');
-    await page.click('#login-fake-btn');
+    await page.waitForSelector('.login-form', { visible: true });
     await page.type('#email', username);
     await page.type('#password', password);
 
     process.stdout.write('Waiting to log in\n');
     await page.waitFor(3000);
-    await page.click('button.btn-login');
-    await page.waitForNavigation();
+    await page.click('button[type=submit]');
+    process.stdout.write('Waiting for cookies. This can take some time...\n');
+    let currentURL = await page.mainFrame().url();
+    while (currentURL !== `${domainURL}/myworld`) {
+        await page.waitFor(1000);
+        currentURL = await page.mainFrame().url();
+    }
+    process.stdout.write(`Logged into ${currentURL}\n`);
+    try {
+        await page.waitForNavigation();
 
-    const cookies = await page.cookies();
-    await writeToFile(cookies, 'cookies');
-    return null;
+        const cookies = await page.cookies();
+        await writeToFile(cookies, 'cookies');
+        browser.close();
+        return null;
+    } catch (error) {
+        process.stdout.write('Timed Out...cookies may be invalid.\n');
+        const cookies = await page.cookies();
+        await writeToFile(cookies, 'cookies');
+        browser.close();
+        return null;
+    }
 };

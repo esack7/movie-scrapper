@@ -2,7 +2,7 @@ const fs = require('fs');
 const client = require('superagent');
 require('dotenv').config();
 
-const loginURL = process.env.LOGINURL;
+const domainURL = process.env.DOMAINURL;
 
 module.exports = {
     readInput: reader =>
@@ -41,7 +41,7 @@ module.exports = {
     makeGetRequest: (postURL, cookieString, csrfToken) =>
         new Promise((resolve, reject) => {
             client
-                .get(loginURL + postURL)
+                .get(domainURL + postURL)
                 .set('Cookie', cookieString)
                 .set('x-csrf-token', `${csrfToken}`)
                 .then(res => {
@@ -52,7 +52,7 @@ module.exports = {
                     return reject();
                 });
         }),
-    cookiesExist: path =>
+    fileExists: path =>
         new Promise((resolve, reject) => {
             fs.access(path, fs.constants.F_OK, err => {
                 if (err) {
@@ -71,4 +71,25 @@ module.exports = {
                 resolve(JSON.parse(data));
             });
         }),
+    formatPost: post =>
+        post.text
+            .split('\n')
+            .map(ele => {
+                const eleObject = {
+                    text: ele,
+                    cost: 0,
+                    postItemId: post.postItemId,
+                    userId: post.userId,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt,
+                    editedAt: post.editedAt,
+                };
+                const splitMoney = ele.split('$');
+                if (splitMoney.length > 1) {
+                    eleObject.cost = parseFloat(splitMoney[1].split(' ')[0]);
+                }
+                return eleObject;
+            })
+            .filter(obj => !!obj.text.trim())
+            .filter(obj => obj.text.indexOf('#') === -1),
 };
