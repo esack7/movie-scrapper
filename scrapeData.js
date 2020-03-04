@@ -9,20 +9,23 @@ module.exports = async function(csrfToken, cookieString) {
     let newURL = postURL;
     const postsArrayExists = await fileExists(filePath);
     console.log('Array exists? ', postsArrayExists);
-    const postsArray = [];
+    const feedArray = [];
+    const usersArray = [];
     process.stdout.write(`Accessing Posts Data`);
-    for (let i = 0; i < 11; i++) {
+    for (let i = 0; i < 10; i++) {
         process.stdout.write(` .`);
         const res = await makeGetRequest(newURL, cookieString, csrfToken).catch(err => {
             console.error('Something went wrong with the request:\n', err);
         });
         const { users } = res;
         const feed = await formatFeed(res.feed);
-        const formattedResponse = { feed, users };
         newURL = res._links.nextPage.href;
-        postsArray.push(formattedResponse);
+        feedArray.push(feed);
+        usersArray.push(users);
     }
     process.stdout.write(` done!\n`);
-
-    await writeToFile(postsArray, 'postFeedArray');
+    const flattenedFeed = [].concat(...[].concat(...feedArray));
+    const flattenedUsers = [].concat(...[].concat(...usersArray));
+    const postFeedData = { feed: flattenedFeed, users: flattenedUsers };
+    await writeToFile(postFeedData, 'postFeedData');
 };

@@ -71,19 +71,26 @@ module.exports = {
                 resolve(JSON.parse(data));
             });
         }),
-    formatPost: post => {
-        const formattedPost = post;
-        formattedPost.textArray = post.text
+    formatPost: post =>
+        post.text
             .split('\n')
             .map(ele => {
-                const eleObject = { text: ele, cost: 0 };
+                const eleObject = {
+                    text: ele,
+                    cost: 0,
+                    postItemId: post.postItemId,
+                    userId: post.userId,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt,
+                    editedAt: post.editedAt,
+                };
                 const splitMoney = ele.split('$');
                 if (splitMoney.length > 1) {
                     eleObject.cost = parseFloat(splitMoney[1].split(' ')[0]);
                 }
                 return eleObject;
             })
-            .sort((a, b) => b.cost - a.cost);
-        return formattedPost;
-    },
+            .filter(obj => !!obj.text.trim())
+            .filter(obj => obj.text.indexOf('#') === -1)
+            .sort((a, b) => b.cost - a.cost),
 };
