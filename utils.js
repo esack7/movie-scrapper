@@ -91,6 +91,5 @@ module.exports = {
                 return eleObject;
             })
             .filter(obj => !!obj.text.trim())
-            .filter(obj => obj.text.indexOf('#') === -1)
-            .sort((a, b) => b.cost - a.cost),
+            .filter(obj => obj.text.indexOf('#') === -1),
 };

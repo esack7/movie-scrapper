@@ -24,7 +24,7 @@ module.exports = async function(csrfToken, cookieString) {
         usersArray.push(users);
     }
     process.stdout.write(` done!\n`);
-    const flattenedFeed = [].concat(...[].concat(...feedArray));
+    const flattenedFeed = [].concat(...[].concat(...feedArray)).sort((a, b) => b.cost - a.cost);
     const flattenedUsers = [].concat(...[].concat(...usersArray));
     const postFeedData = { feed: flattenedFeed, users: flattenedUsers };
     await writeToFile(postFeedData, 'postFeedData');
