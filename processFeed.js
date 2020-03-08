@@ -1,4 +1,4 @@
-const { getTime, differenceInMinutes, differenceInHours } = require('date-fns');
+const { getTime, differenceInMinutes, differenceInHours, parseISO } = require('date-fns');
 const { readJSONFile } = require('./utils.js');
 require('dotenv').config();
 
@@ -10,8 +10,8 @@ module.exports = async function(searchTerm) {
     const now = getTime(new Date());
     const data = await readJSONFile('./postFeedData.json');
     await data.feed.map(item => {
-        const diffHours = differenceInHours(now, item.createdAt * 1000);
-        const diffMinutes = differenceInMinutes(now, item.createdAt * 1000);
+        const diffHours = differenceInHours(now, parseISO(item.createdAt));
+        const diffMinutes = differenceInMinutes(now, parseISO(item.createdAt));
         if (item.text.match(searchRegex)) {
             process.stdout.write(`\n${item.text}\n`);
             process.stdout.write(`Posted ${diffHours} hours ${diffMinutes - diffHours * 60} minutes ago\n`);

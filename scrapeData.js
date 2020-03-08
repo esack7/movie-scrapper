@@ -1,5 +1,4 @@
-const { makeGetRequest, writeToFile, fileExists } = require('./utils');
-const formatFeed = require('./formatFeed.js');
+const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost } = require('./utils');
 require('dotenv').config();
 
 const postURL = process.env.POSTURL;
@@ -18,7 +17,7 @@ module.exports = async function(csrfToken, cookieString) {
             console.error('Something went wrong with the request:\n', err);
         });
         const { users } = res;
-        const feed = await formatFeed(res.feed);
+        const feed = await formatFeed(res.feed, formatPost);
         newURL = res._links.nextPage.href;
         feedArray.push(feed);
         usersArray.push(users);
