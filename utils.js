@@ -1,5 +1,6 @@
 const fs = require('fs');
 const client = require('superagent');
+const { parseJSON } = require('date-fns');
 require('dotenv').config();
 
 const domainURL = process.env.DOMAINURL;
@@ -80,9 +81,9 @@ module.exports = {
                     cost: 0,
                     postItemId: post.postItemId,
                     userId: post.userId,
-                    createdAt: post.createdAt,
-                    updatedAt: post.updatedAt,
-                    editedAt: post.editedAt,
+                    createdAt: parseJSON(post.createdAt * 1000),
+                    updatedAt: parseJSON(post.updatedAt * 1000),
+                    editedAt: parseJSON(post.editedAt * 1000),
                 };
                 const splitMoney = ele.split('$');
                 if (splitMoney.length > 1) {
@@ -92,4 +93,12 @@ module.exports = {
             })
             .filter(obj => !!obj.text.trim())
             .filter(obj => obj.text.indexOf('#') === -1),
+    async formatFeed(feed, formatPost) {
+        const formattedFeed = [];
+        for (let i = 0; i < feed.length; i++) {
+            const formattedPost = await formatPost(feed[i]);
+            formattedFeed.push(formattedPost);
+        }
+        return formattedFeed;
+    },
 };
