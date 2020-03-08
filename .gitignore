@@ -170,5 +170,6 @@ $RECYCLE.BIN/
 postFeed.json
 cookies.json
 postFeed*.json
+*movieData*
 
 # End of https://www.gitignore.io/api/node,linux,macos,dotenv,windows
