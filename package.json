@@ -12,6 +12,7 @@
 		"date-fns": "^2.8.1",
 		"dotenv": "^8.2.0",
 		"puppeteer": "^2.1.1",
-		"superagent": "^5.1.2"
+		"superagent": "^5.1.2",
+		"xlsx": "^0.15.5"
 	}
 }

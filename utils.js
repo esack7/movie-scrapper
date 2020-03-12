@@ -89,6 +89,7 @@ module.exports = {
                 if (splitMoney.length > 1) {
                     eleObject.cost = parseFloat(splitMoney[1].split(' ')[0]);
                 }
+                eleObject.text = eleObject.text.replace(/[^a-z0-9 ]/gi, '').trim();
                 return eleObject;
             })
             .filter(obj => !!obj.text.trim())
