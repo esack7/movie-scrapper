@@ -1,4 +1,8 @@
 const xlsx = require('xlsx');
+
+// const workbook = xlsx.readFile('./movieData.xlsx');
+
+// console.log(workbook.Sheets);
 const { readJSONFile } = require('./utils.js');
 require('dotenv').config();
 
@@ -26,13 +30,16 @@ const test = async () => {
     const dataWorkSheet = xlsx.utils.json_to_sheet(newFeedData, { cellDates: true });
 
     for (let i = 2; i <= dataLength; i++) {
+        const link = dataWorkSheet[`C${i}`].v;
+        dataWorkSheet[`C${i}`].t = 'l';
+        dataWorkSheet[`C${i}`].v = 'Link';
+        dataWorkSheet[`C${i}`].l = { Target: link };
         dataWorkSheet[`D${i}`].t = 'd';
+        dataWorkSheet[`D${i}`].z = 'd:h:mm';
     }
-
-    const userWorkSheet = xlsx.utils.json_to_sheet(dataJSON.users);
+    dataWorkSheet['!autofilter'] = { ref: `A1:D${dataLength}` };
 
     xlsx.utils.book_append_sheet(WorkBook, dataWorkSheet, 'Movie Data');
-    xlsx.utils.book_append_sheet(WorkBook, userWorkSheet, 'User Data');
     xlsx.writeFile(WorkBook, 'movieData.xlsx');
 };
 
