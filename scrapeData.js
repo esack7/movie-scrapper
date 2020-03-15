@@ -1,15 +1,25 @@
-const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost } = require('./utils');
+const { getTime, parseJSON } = require('date-fns');
+const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost, readJSONFile } = require('./utils');
 require('dotenv').config();
 
 const postURL = process.env.POSTURL;
-const filePath = `./postFeedArray.json`;
+const filePath = `./postFeedData.json`;
 
 module.exports = async function(csrfToken, cookieString) {
     let newURL = postURL;
-    const postsArrayExists = await fileExists(filePath);
-    console.log('Array exists? ', postsArrayExists);
-    const feedArray = [];
-    const usersArray = [];
+    const postsFeedDataExists = await fileExists(filePath);
+    let postFeedData = {};
+    let userObj = {};
+    let postItemsObj = {};
+    let feedArray = [];
+
+    if (postsFeedDataExists) {
+        postFeedData = readJSONFile(filePath);
+        userObj = postFeedData.users;
+        postItemsObj = postFeedData.postItems;
+        feedArray = postFeedData.feed;
+    }
+
     process.stdout.write(`Accessing Posts Data`);
     for (let i = 0; i < 10; i++) {
         process.stdout.write(` .`);
@@ -19,12 +29,31 @@ module.exports = async function(csrfToken, cookieString) {
         const { users } = res;
         const feed = await formatFeed(res.feed, formatPost);
         newURL = res._links.nextPage.href;
-        feedArray.push(feed);
-        usersArray.push(users);
+        // feedArray.push(feed);
+        feed.map(posts => {
+            // console.log(posts);
+            posts.map(
+                post =>
+                    // console.log(post);
+                    null
+            );
+            return null;
+        });
+        users.map(user => {
+            console.log('User: ', user);
+            // userObj[`${user.id}`] = {
+            //     name: user.name,
+            //     contactInviteId: user.contactInviteId,
+            // };
+            return null;
+        });
     }
+    const timeScrapped = parseJSON(getTime(new Date()));
     process.stdout.write(` done!\n`);
+
     const flattenedFeed = [].concat(...[].concat(...feedArray)).sort((a, b) => b.cost - a.cost);
-    const flattenedUsers = [].concat(...[].concat(...usersArray));
-    const postFeedData = { feed: flattenedFeed, users: flattenedUsers };
+
+    postFeedData = { feed: flattenedFeed, postItems: postItemsObj, users: userObj, time: timeScrapped };
+
     await writeToFile(postFeedData, 'postFeedData');
 };
