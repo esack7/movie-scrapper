@@ -1,8 +1,4 @@
 const xlsx = require('xlsx');
-
-// const workbook = xlsx.readFile('./movieData.xlsx');
-
-// console.log(workbook.Sheets);
 const { readJSONFile } = require('./utils.js');
 require('dotenv').config();
 
@@ -16,15 +12,12 @@ const test = async () => {
     const newFeedData = dataJSON.feed.map(item => {
         item.Movie = item.text;
         item.Price = item.cost;
-        item.Link = `${domainURL}${groupURL}/profile/${item.userId}`;
-        item.Date = item.createdAt;
+        item.Link = `${domainURL}${groupURL}/profile/${dataJSON.postItems[`${item.postItemId}`].userId}`;
+        item.Posted = dataJSON.postItems[`${item.postItemId}`].createdAt;
+        item.Seller = dataJSON.users[`${dataJSON.postItems[`${item.postItemId}`].userId}`].name;
         delete item.text;
         delete item.cost;
         delete item.postItemId;
-        delete item.userId;
-        delete item.createdAt;
-        delete item.updatedAt;
-        delete item.editedAt;
         return item;
     });
     const dataWorkSheet = xlsx.utils.json_to_sheet(newFeedData, { cellDates: true });
@@ -35,9 +28,9 @@ const test = async () => {
         dataWorkSheet[`C${i}`].v = 'Link';
         dataWorkSheet[`C${i}`].l = { Target: link };
         dataWorkSheet[`D${i}`].t = 'd';
-        dataWorkSheet[`D${i}`].z = 'd:h:mm';
+        dataWorkSheet[`D${i}`].z = 'm/d/yy h:mm AM/PM';
     }
-    dataWorkSheet['!autofilter'] = { ref: `A1:D${dataLength}` };
+    dataWorkSheet['!autofilter'] = { ref: `A1:E${dataLength}` };
 
     xlsx.utils.book_append_sheet(WorkBook, dataWorkSheet, 'Movie Data');
     xlsx.writeFile(WorkBook, 'movieData.xlsx');

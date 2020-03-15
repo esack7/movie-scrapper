@@ -1,15 +1,24 @@
-const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost } = require('./utils');
+const { getTime, parseJSON, differenceInSeconds } = require('date-fns');
+const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost, readJSONFile } = require('./utils');
+const mergeData = require('./mergeData');
 require('dotenv').config();
 
 const postURL = process.env.POSTURL;
-const filePath = `./postFeedArray.json`;
+const filePath = `./postFeedData.json`;
 
 module.exports = async function(csrfToken, cookieString) {
     let newURL = postURL;
-    const postsArrayExists = await fileExists(filePath);
-    console.log('Array exists? ', postsArrayExists);
+    const postsFeedDataExists = await fileExists(filePath);
+    let postFeedData = {
+        users: {},
+        postItems: {},
+        feed: [],
+    };
+    const userObj = {};
+    const postItemsObj = {};
     const feedArray = [];
-    const usersArray = [];
+    let postsToRemove = [];
+
     process.stdout.write(`Accessing Posts Data`);
     for (let i = 0; i < 10; i++) {
         process.stdout.write(` .`);
@@ -19,12 +28,87 @@ module.exports = async function(csrfToken, cookieString) {
         const { users } = res;
         const feed = await formatFeed(res.feed, formatPost);
         newURL = res._links.nextPage.href;
-        feedArray.push(feed);
-        usersArray.push(users);
+
+        users.map(user => {
+            userObj[`${user.id}`] = {
+                name: user.name,
+                contactInviteId: user.contactInviteId,
+                posts: [],
+            };
+            return null;
+        });
+
+        feed.map(posts => {
+            posts.map(post => {
+                postItemsObj[`${post.postItemId}`] = {
+                    userId: post.userId,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt,
+                    editedAt: post.editedAt,
+                };
+                feedArray.push({
+                    text: post.text,
+                    cost: post.cost,
+                    postItemId: post.postItemId,
+                });
+                return null;
+            });
+            return null;
+        });
     }
+    const timeScrapped = getTime(new Date());
     process.stdout.write(` done!\n`);
-    const flattenedFeed = [].concat(...[].concat(...feedArray)).sort((a, b) => b.cost - a.cost);
-    const flattenedUsers = [].concat(...[].concat(...usersArray));
-    const postFeedData = { feed: flattenedFeed, users: flattenedUsers };
-    await writeToFile(postFeedData, 'postFeedData');
+
+    // Add posts to users
+    Object.keys(postItemsObj).map(ele => {
+        const user = postItemsObj[`${ele}`].userId;
+        userObj[`${user}`].posts.push(ele);
+        return null;
+    });
+
+    // Populate postsToRemove array
+    Object.keys(userObj).map(user => {
+        const userPosts = userObj[`${user}`].posts;
+        if (userPosts.length > 1) {
+            let postToKeep = '';
+            let ageOfPost = 1000000; // Should be amount greater than the oldest item to keep, 1 week === 604800
+            postsToRemove = postsToRemove.concat(
+                userPosts
+                    .map(post => {
+                        const age = differenceInSeconds(postItemsObj[`${post}`].createdAt, timeScrapped);
+                        if (age < ageOfPost) {
+                            ageOfPost = age;
+                            postToKeep = post;
+                        }
+                        return post;
+                    })
+                    .filter(post => post !== postToKeep)
+            );
+            userObj[`${user}`].posts = [postToKeep];
+        }
+        if (userPosts.length === 0) {
+            delete userObj[`${user}`];
+        }
+        return null;
+    });
+
+    postsToRemove.map(item => {
+        delete postItemsObj[`${item}`];
+        return null;
+    });
+
+    const filteredSortedFeed = feedArray
+        .filter(item => !postsToRemove.includes(item.postItemId))
+        .sort((a, b) => b.cost - a.cost);
+
+    postFeedData = { feed: filteredSortedFeed, postItems: postItemsObj, users: userObj, time: parseJSON(timeScrapped) };
+
+    if (postsFeedDataExists) {
+        const priorPostFeedData = await readJSONFile(filePath);
+        const mergedPostFeedData = await mergeData(priorPostFeedData, postFeedData);
+
+        await writeToFile(mergedPostFeedData, 'postFeedData');
+    } else {
+        await writeToFile(postFeedData, 'postFeedData');
+    }
 };

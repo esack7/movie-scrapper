@@ -94,6 +94,7 @@ module.exports = {
             })
             .filter(obj => !!obj.text.trim())
             .filter(obj => obj.text.indexOf('#') === -1),
+    // Fix this, Bad Design
     async formatFeed(feed, formatPost) {
         const formattedFeed = [];
         for (let i = 0; i < feed.length; i++) {
