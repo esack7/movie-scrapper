@@ -10,12 +10,13 @@ module.exports = async function(searchTerm) {
     const now = getTime(new Date());
     const data = await readJSONFile('./postFeedData.json');
     await data.feed.map(item => {
-        const diffHours = differenceInHours(now, parseISO(item.createdAt));
-        const diffMinutes = differenceInMinutes(now, parseISO(item.createdAt));
+        // console.log(item);
+        const diffHours = differenceInHours(now, parseISO(data.postItems[`${item.postItemId}`].createdAt));
+        const diffMinutes = differenceInMinutes(now, parseISO(data.postItems[`${item.postItemId}`].createdAt));
         if (item.text.match(searchRegex)) {
             process.stdout.write(`\n${item.text}\n`);
             process.stdout.write(`Posted ${diffHours} hours ${diffMinutes - diffHours * 60} minutes ago\n`);
-            process.stdout.write(`${domainURL}${groupURL}/profile/${item.userId}\n`);
+            process.stdout.write(`${domainURL}${groupURL}/profile/${data.postItems[`${item.postItemId}`].userId}\n`);
         }
         return null;
     });

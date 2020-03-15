@@ -1,4 +1,5 @@
-const { getTime, parseJSON } = require('date-fns');
+/* eslint-disable no-cond-assign */
+const { getTime, parseJSON, differenceInSeconds } = require('date-fns');
 const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost, readJSONFile } = require('./utils');
 const mergeData = require('./mergeData');
 require('dotenv').config();
@@ -17,6 +18,7 @@ module.exports = async function(csrfToken, cookieString) {
     const userObj = {};
     const postItemsObj = {};
     const feedArray = [];
+    let postsToRemove = [];
 
     process.stdout.write(`Accessing Posts Data`);
     for (let i = 0; i < 10; i++) {
@@ -55,17 +57,53 @@ module.exports = async function(csrfToken, cookieString) {
             return null;
         });
     }
-    const timeScrapped = parseJSON(getTime(new Date()));
+    const timeScrapped = getTime(new Date());
     process.stdout.write(` done!\n`);
 
+    // Add posts to users
     Object.keys(postItemsObj).map(ele => {
         const user = postItemsObj[`${ele}`].userId;
         userObj[`${user}`].posts.push(ele);
         return null;
     });
 
-    const sortedFeed = feedArray.sort((a, b) => b.cost - a.cost);
-    postFeedData = { feed: sortedFeed, postItems: postItemsObj, users: userObj, time: timeScrapped };
+    // Populate postsToRemove array
+    Object.keys(userObj).map(user => {
+        const userPosts = userObj[`${user}`].posts;
+        if (userPosts.length > 1) {
+            let postToKeep = '';
+            let ageOfPost = 1000000; // Should be amount greater than the oldest item to keep, 1 week === 604800
+            postsToRemove = postsToRemove.concat(
+                userPosts
+                    .map(post => {
+                        const age = differenceInSeconds(postItemsObj[`${post}`].createdAt, timeScrapped);
+                        if (age < ageOfPost) {
+                            ageOfPost = age;
+                            postToKeep = post;
+                        }
+                        return post;
+                    })
+                    .filter(post => post !== postToKeep)
+            );
+            // console.log(`Post to keep: `, postToKeep);
+            userObj[`${user}`].posts = [postToKeep];
+        }
+        if (userPosts.length === 0) {
+            delete userObj[`${user}`];
+        }
+        return null;
+    });
+
+    postsToRemove.map(item => {
+        delete postItemsObj[`${item}`];
+        return null;
+    });
+
+    const filteredSortedFeed = feedArray
+        .filter(item => !postsToRemove.includes(item.postItemId))
+        .sort((a, b) => b.cost - a.cost);
+
+    postFeedData = { feed: filteredSortedFeed, postItems: postItemsObj, users: userObj, time: parseJSON(timeScrapped) };
 
     if (postsFeedDataExists) {
         const priorPostFeedData = await readJSONFile(filePath);
