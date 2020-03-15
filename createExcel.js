@@ -1,5 +1,4 @@
 const xlsx = require('xlsx');
-// const { differenceInMilliseconds, parseJSON, parseISO } = require('date-fns');
 const { readJSONFile } = require('./utils.js');
 require('dotenv').config();
 

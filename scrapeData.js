@@ -1,4 +1,3 @@
-/* eslint-disable no-cond-assign */
 const { getTime, parseJSON, differenceInSeconds } = require('date-fns');
 const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost, readJSONFile } = require('./utils');
 const mergeData = require('./mergeData');
@@ -85,7 +84,6 @@ module.exports = async function(csrfToken, cookieString) {
                     })
                     .filter(post => post !== postToKeep)
             );
-            // console.log(`Post to keep: `, postToKeep);
             userObj[`${user}`].posts = [postToKeep];
         }
         if (userPosts.length === 0) {
