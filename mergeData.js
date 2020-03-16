@@ -1,8 +1,15 @@
 module.exports = (priorData, data) =>
     new Promise((resolve, reject) => {
-        console.log('Need to implement "MERGE"!');
+        // console.log('Need to implement "MERGE"!');
         try {
-            resolve(data);
+            const newDataObj = {
+                users: priorData.users,
+                postItems: {},
+                feed: [],
+                time: data.time,
+            };
+
+            resolve(newDataObj);
         } catch (err) {
             reject(err);
         }
