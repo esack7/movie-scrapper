@@ -90,9 +90,6 @@ module.exports = {
                     const detectedPrice = parseFloat(splitMoney[1].split(' ')[0]);
                     if (detectedPrice) {
                         eleObject.cost = detectedPrice;
-                    } else {
-                        console.log('Null price: ', splitMoney);
-                    }
                 }
                 eleObject.text = eleObject.text.replace(/[^a-z0-9 ]/gi, '').trim();
                 return eleObject;
