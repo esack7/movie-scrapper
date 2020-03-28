@@ -1,4 +1,5 @@
-const xlsx = require('xlsx');
+const ExcelJS = require('exceljs');
+const { parseISO } = require('date-fns');
 const { readJSONFile } = require('./utils.js');
 require('dotenv').config();
 
@@ -8,32 +9,49 @@ const groupURL = process.env.GROUPURL;
 const test = async () => {
     const dataJSON = await readJSONFile('./postFeedData.json');
     const dataLength = dataJSON.feed.length + 1;
-    const WorkBook = xlsx.utils.book_new();
-    const newFeedData = dataJSON.feed.map(item => {
-        item.Movie = item.text;
-        item.Price = item.cost;
-        item.Link = `${domainURL}${groupURL}/profile/${dataJSON.postItems[`${item.postItemId}`].userId}`;
-        item.Posted = dataJSON.postItems[`${item.postItemId}`].createdAt;
-        item.Seller = dataJSON.users[`${dataJSON.postItems[`${item.postItemId}`].userId}`].name;
-        delete item.text;
-        delete item.cost;
-        delete item.postItemId;
-        return item;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(`Movie Data`);
+    worksheet.columns = [
+        { header: 'Movie', key: 'movie', width: 42 },
+        { header: 'Price', key: 'price', width: 14 },
+        { header: 'Link', key: 'link', width: 12 },
+        { header: 'Posted', key: 'posted', width: 19 },
+        { header: 'Seller', key: 'seller', width: 18 },
+    ];
+    dataJSON.feed.map((item, idx) => {
+        worksheet.addRow({
+            movie: item.text,
+            price: item.cost,
+            link: {
+                text: 'Link',
+                hyperlink: `${domainURL}${groupURL}/profile/${dataJSON.postItems[`${item.postItemId}`].userId}`,
+            },
+            posted: parseISO(dataJSON.postItems[`${item.postItemId}`].createdAt),
+            seller: dataJSON.users[`${dataJSON.postItems[`${item.postItemId}`].userId}`].name,
+        });
+
+        worksheet.getCell(`A${idx + 2}`).alignment = { vertical: 'middle', horizontal: 'left' };
+        worksheet.getCell(`B${idx + 2}`).alignment = { vertical: 'middle', horizontal: 'center' };
+        worksheet.getCell(`C${idx + 2}`).alignment = { vertical: 'middle', horizontal: 'center' };
+        worksheet.getCell(`D${idx + 2}`).alignment = { vertical: 'middle', horizontal: 'center' };
+        worksheet.getCell(`D${idx + 2}`).numFmt = 'm/d/yy h:mm AM/PM';
+        worksheet.getCell(`E${idx + 2}`).alignment = { vertical: 'middle', horizontal: 'center' };
+        return null;
     });
-    const dataWorkSheet = xlsx.utils.json_to_sheet(newFeedData, { cellDates: true });
-
-    for (let i = 2; i <= dataLength; i++) {
-        const link = dataWorkSheet[`C${i}`].v;
-        dataWorkSheet[`C${i}`].t = 'l';
-        dataWorkSheet[`C${i}`].v = 'Link';
-        dataWorkSheet[`C${i}`].l = { Target: link };
-        dataWorkSheet[`D${i}`].t = 'd';
-        dataWorkSheet[`D${i}`].z = 'm/d/yy h:mm AM/PM';
-    }
-    dataWorkSheet['!autofilter'] = { ref: `A1:E${dataLength}` };
-
-    xlsx.utils.book_append_sheet(WorkBook, dataWorkSheet, 'Movie Data');
-    xlsx.writeFile(WorkBook, 'movieData.xlsx');
+    worksheet.getCell('A1').alignment = { horizontal: 'center' };
+    worksheet.getCell('A1').font = { bold: 'true' };
+    worksheet.getCell('B1').alignment = { horizontal: 'center' };
+    worksheet.getCell('B1').font = { bold: 'true' };
+    worksheet.getCell('C1').alignment = { horizontal: 'center' };
+    worksheet.getCell('C1').font = { bold: 'true' };
+    worksheet.getCell('D1').alignment = { horizontal: 'center' };
+    worksheet.getCell('D1').font = { bold: 'true' };
+    worksheet.getCell('E1').alignment = { horizontal: 'center' };
+    worksheet.getCell('E1').font = { bold: 'true' };
+    worksheet.autoFilter = `A1:E${dataLength}`;
+    worksheet.views = [{ state: 'frozen', ySplit: 1, zoomScale: 150 }];
+    await workbook.xlsx.writeFile('test.xlsx');
+    console.log('Data Length: ', dataLength);
 };
 
 test();
