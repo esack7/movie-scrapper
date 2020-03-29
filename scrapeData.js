@@ -1,6 +1,7 @@
 const { getTime, parseJSON, differenceInSeconds } = require('date-fns');
 const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost, readJSONFile } = require('./utils');
 const mergeData = require('./mergeData');
+const createExcel = require('./createExcel');
 require('dotenv').config();
 
 const postURL = process.env.POSTURL;
@@ -108,7 +109,9 @@ module.exports = async function(csrfToken, cookieString) {
         const mergedPostFeedData = await mergeData(priorPostFeedData, postFeedData);
 
         await writeToFile(mergedPostFeedData, 'postFeedData');
+        await createExcel();
     } else {
         await writeToFile(postFeedData, 'postFeedData');
+        await createExcel();
     }
 };

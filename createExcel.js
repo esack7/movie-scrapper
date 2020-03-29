@@ -6,7 +6,7 @@ require('dotenv').config();
 const domainURL = process.env.DOMAINURL;
 const groupURL = process.env.GROUPURL;
 
-const test = async () => {
+module.exports = async () => {
     const dataJSON = await readJSONFile('./postFeedData.json');
     const dataLength = dataJSON.feed.length + 1;
     const workbook = new ExcelJS.Workbook();
@@ -50,8 +50,6 @@ const test = async () => {
     worksheet.getCell('E1').font = { bold: 'true' };
     worksheet.autoFilter = `A1:E${dataLength}`;
     worksheet.views = [{ state: 'frozen', ySplit: 1, zoomScale: 150 }];
-    await workbook.xlsx.writeFile('test.xlsx');
-    console.log('Data Length: ', dataLength);
+    await workbook.xlsx.writeFile('MovieData.xlsx');
+    process.stdout.write(`\nExcel File Created!\n`);
 };
-
-test();
