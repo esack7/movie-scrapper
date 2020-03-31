@@ -1,4 +1,5 @@
 const readline = require('readline');
+const { initializeDb } = require('./database.js');
 const { fileExists, readJSONFile, deleteCookies, readInput } = require('./utils.js');
 const scrapeData = require('./scrapeData.js');
 const auth = require('./auth.js');
@@ -12,6 +13,11 @@ const lineReader = readline.createInterface({
 async function main() {
     const cookiesPath = './cookies.json';
     const cookieExist = await fileExists(cookiesPath);
+    const dbExists = await fileExists('./MovieData.db');
+
+    if (!dbExists) {
+        await initializeDb();
+    }
 
     if (!cookieExist) {
         await auth();
