@@ -109,11 +109,11 @@ module.exports = async function(csrfToken, cookieString) {
         const priorPostFeedData = await readJSONFile(filePath);
         const mergedPostFeedData = await mergeData(priorPostFeedData, postFeedData);
 
-        await addScrapeDataToDb(mergedPostFeedData);
+        // await addScrapeDataToDb(mergedPostFeedData);
         await writeToFile(mergedPostFeedData, 'postFeedData');
         await createExcel();
     } else {
-        await addScrapeDataToDb(postFeedData);
+        // await addScrapeDataToDb(postFeedData);
         await writeToFile(postFeedData, 'postFeedData');
         await createExcel();
     }
