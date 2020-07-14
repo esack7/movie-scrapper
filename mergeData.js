@@ -1,7 +1,7 @@
 const { getPostItems, deleteFeedItemByPostIds } = require('./database.js');
 
 const prior = require('./postFeedData2.json');
-const current = require('./postFeedData.json');
+const current = require('./postFeedData1.json');
 
 module.exports = (priorData, newData) =>
     new Promise(async (resolve, reject) => {
