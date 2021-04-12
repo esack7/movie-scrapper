@@ -1,11 +1,11 @@
-const { getTime, parseJSON, differenceInSeconds } = require('date-fns');
-const { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost, readJSONFile } = require('./utils');
-const mergeData = require('./mergeData');
-const createExcel = require('./createExcel');
+import { getTime, parseJSON, differenceInSeconds } from 'date-fns';
+import { makeGetRequest, writeToFile, fileExists, formatFeed, formatPost, readJSONFile } from './utils';
+import mergeData from './mergeData';
+import createExcel from './createExcel';
 require('dotenv').config();
 
 const postURL = process.env.POSTURL;
-const filePath = `./postFeedData.json`;
+const filePath: string  = `./postFeedData.json`;
 
 module.exports = async function(csrfToken, cookieString) {
     let newURL = postURL;

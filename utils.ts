@@ -1,6 +1,6 @@
-const fs = require('fs');
-const client = require('superagent');
-const { parseJSON } = require('date-fns');
+import fs from 'fs';
+import client from 'superagent';
+import { parseJSON } from 'date-fns';
 require('dotenv').config();
 
 const domainURL = process.env.DOMAINURL;
