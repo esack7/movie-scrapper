@@ -1,15 +1,17 @@
-const puppeteer = require('puppeteer');
-const { writeToFile, readInput } = require('./utils.js');
+import puppeteer from 'puppeteer';
+import { writeToFile, readInput } from './utils';
+
 require('dotenv').config();
 
-let username = process.env.USRNAME;
-let password = process.env.PSWORD;
+let logincred: string | undefined = process.env.LOGINCRED;
+let password: string | undefined = process.env.PSWORD;
+const username: string | undefined = process.env.USRNAME;
 const domainURL = process.env.DOMAINURL;
 
-module.exports = async function() {
-    if (!username) {
+export default async function () {
+    if (!logincred) {
         process.stdout.write('What is your your "Username":\n');
-        username = await readInput();
+        logincred = await readInput();
     }
     if (!password) {
         process.stdout.write('What is your your "Password":\n');
@@ -23,7 +25,7 @@ module.exports = async function() {
 
     process.stdout.write('Loading Page\n');
     await page.waitForSelector('.login-form', { visible: true });
-    await page.type('#email', username);
+    await page.type('#email', logincred);
     await page.type('#password', password);
 
     process.stdout.write('Waiting to log in\n');
@@ -31,7 +33,7 @@ module.exports = async function() {
     await page.click('button[type=submit]');
     process.stdout.write('Waiting for cookies. This can take some time...\n');
     let currentURL = await page.mainFrame().url();
-    while (currentURL !== `${domainURL}/myworld`) {
+    while (currentURL !== `${domainURL}/i/${username}/contacts`) {
         await page.waitFor(1000);
         currentURL = await page.mainFrame().url();
     }
@@ -50,4 +52,4 @@ module.exports = async function() {
         browser.close();
         return null;
     }
-};
+}

@@ -1,13 +1,7 @@
-import readline from 'readline';
-import { fileExists, readJSONFile, deleteCookies, readInput } from './utils';
+import { fileExists, readCookiesJSONFile, deleteCookies, readInput } from './utils';
 import scrapeData from './scrapeData';
 import auth from './auth';
 import processFeed from './processFeed';
-
-const lineReader = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
 
 async function main() {
     const cookiesPath = './cookies.json';
@@ -18,9 +12,9 @@ async function main() {
         main();
     } else {
         try {
-            const cookies = await readJSONFile(cookiesPath);
+            const cookies = await readCookiesJSONFile(cookiesPath);
             let input = '';
-            let csrfToken;
+            let csrfToken = '';
             let cookieString = '';
 
             cookies.map(ele => {
@@ -35,17 +29,21 @@ async function main() {
                 process.stdout.write(
                     '\nWhat do you want to do?:\n(s - search, r - scrape data, l - log out, q - quit)\n'
                 );
-                input = await readInput(lineReader);
-                if (input === 's') {
-                    process.stdout.write('What do you want to search for?\n');
-                    const searchTerm = await readInput(lineReader);
-                    await processFeed(searchTerm);
-                }
-                if (input === 'r') {
-                    await scrapeData(csrfToken, cookieString);
-                }
-                if (input === 'l') {
-                    await deleteCookies(cookiesPath, 'cookies.json');
+                try {
+                    input = await readInput();
+                    if (input === 's') {
+                        process.stdout.write('What do you want to search for?\n');
+                        const searchTerm = await readInput();
+                        await processFeed(searchTerm);
+                    }
+                    if (input === 'r') {
+                        await scrapeData(csrfToken, cookieString);
+                    }
+                    if (input === 'l') {
+                        await deleteCookies(cookiesPath, 'cookies.json');
+                    }
+                } catch (error) {
+                    console.log('There is an error: ', error);
                 }
             }
             process.exit();
