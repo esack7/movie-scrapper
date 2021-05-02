@@ -1,10 +1,14 @@
 import ExcelJS from 'exceljs';
-import { parseISO } from 'date-fns';
+import { parseISO, addMilliseconds } from 'date-fns';
+import { getTimezoneOffset } from 'date-fns-tz';
 import { readPostFeedDataJSONFile } from './utils.js';
 require('dotenv').config();
 
 const domainURL = process.env.DOMAINURL;
 const groupURL = process.env.GROUPURL;
+// This date calculation is used because excel doesn't handle dates w/timezone offsets.
+const systemTimeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+const offset = getTimezoneOffset(systemTimeZone);
 
 export default async () => {
     const dataJSON = await readPostFeedDataJSONFile('./postFeedData.json');
@@ -26,7 +30,7 @@ export default async () => {
                 text: 'Link',
                 hyperlink: `${domainURL}${groupURL}/profile/${dataJSON.postItems.get(item.postItemId)!.userId}`,
             },
-            posted: parseISO(dataJSON.postItems.get(item.postItemId)!.createdAt.toString()),
+            posted: addMilliseconds(parseISO(dataJSON.postItems.get(item.postItemId)!.createdAt.toString()), offset),
             seller: dataJSON.users.get(dataJSON.postItems.get(item.postItemId)!.userId)!.name,
         });
 
