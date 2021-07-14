@@ -33,7 +33,8 @@ export default async function () {
     await page.click('button[type=submit]');
     process.stdout.write('Waiting for cookies. This can take some time...\n');
     let currentURL = await page.mainFrame().url();
-    while (currentURL !== `${domainURL}/i/${username}/contacts`) {
+
+    while (currentURL !== `${domainURL}/myworld`) {
         await page.waitFor(1000);
         currentURL = await page.mainFrame().url();
     }
