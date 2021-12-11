@@ -2,6 +2,7 @@ import { getTime, parseJSON, differenceInSeconds } from 'date-fns';
 import { makeGetRequest, writeToFile, fileExists, formatFeed, readPostFeedDataJSONFile } from './utils';
 import mergeData from './mergeData';
 import createExcel from './createExcel';
+import { addScrapeDataToDB}  from './database';
 require('dotenv').config();
 
 const postURL = process.env.POSTURL!;
@@ -13,6 +14,7 @@ export default async function (csrfToken: string, cookieString: string) {
     const userObj = new Map<string, UserTrackingInterface>();
     const postItemsObj = new Map<string, PostItemInterface>();
     const feedArray: FeedItemInterface[] = [];
+    const postItemArray: String[] = [];
     let postsToRemove: string[] = [];
 
     process.stdout.write(`Accessing Posts Data`);
@@ -45,6 +47,7 @@ export default async function (csrfToken: string, cookieString: string) {
                         cost: post.cost,
                         postItemId: post.postItemId,
                     });
+                    postItemArray.push(post.postItemId);
                 });
             });
 
@@ -100,15 +103,16 @@ export default async function (csrfToken: string, cookieString: string) {
         users: Object.fromEntries(userObj),
         time: parseJSON(timeScrapped)
     };
-
     if (postsFeedDataExists) {
         const priorPostFeedData = await readPostFeedDataJSONFile(filePath);
         const mergedPostFeedData = await mergeData(priorPostFeedData, postFeedData);
-
+        
+        // await addScrapeDataToDB(mergedPostFeedData);
         await writeToFile(mergedPostFeedData, 'postFeedData');
-        await createExcel();
+        // await createExcel();
     } else {
+        // await addScrapeDataToDB(postFeedData);
         await writeToFile(postFeedData, 'postFeedData');
-        await createExcel();
+        // await createExcel();
     }
 };
