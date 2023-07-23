@@ -5,7 +5,6 @@ require("dotenv").config();
 
 let logincred: string | undefined = process.env.LOGINCRED;
 let password: string | undefined = process.env.PSWORD;
-const username: string | undefined = process.env.USRNAME;
 const domainURL = process.env.DOMAINURL;
 
 export default async function () {
@@ -24,21 +23,20 @@ export default async function () {
   await page.goto(`${domainURL}/login`);
 
   process.stdout.write("Loading Page\n");
-  await page.waitForSelector(".new-form", { visible: true });
-  await page.type("#email", logincred);
+  await page.waitForSelector(".c-mw-home-login-form", { visible: true });
+  await page.type("#email-or-phone", logincred);
   await page.type("#password", password);
 
   process.stdout.write("Waiting to log in\n");
   await page.waitForSelector("button[type=submit]");
-  // await page.waitFor(3000);
-  await page.click("button[type=submit]");
   process.stdout.write("Waiting for cookies. This can take some time...\n");
   let currentURL = await page.mainFrame().url();
 
   while (currentURL !== `${domainURL}/myworld`) {
-    await page.waitForNetworkIdle();
+    await page.$eval("button[type=submit]", (elem) => elem.click());
     currentURL = await page.mainFrame().url();
   }
+  currentURL = await page.mainFrame().url();
   process.stdout.write(`Logged into ${currentURL}\n`);
   try {
     await page.waitForNavigation();
