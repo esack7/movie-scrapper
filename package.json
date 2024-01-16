@@ -2,7 +2,7 @@
   "name": "movie-scrapper",
   "version": "1.0.0",
   "description": "Scrapper using puppeteer",
-  "main": ".dist/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "tsc && node ./dist/index.js",
     "build": "tsc",
