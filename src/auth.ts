@@ -20,23 +20,23 @@ export default async function () {
   process.stdout.write("Starting Puppeteer\n");
   const pages = await browser.pages();
   const page = pages[0];
-  await page.goto(`${domainURL}/login`);
+  await page.goto(`${domainURL}/web3/login`);
 
   process.stdout.write("Loading Page\n");
   await page.waitForSelector(".c-mw-home-login-form", { visible: true });
-  await page.type("#email-or-phone", logincred);
-  await page.type("#password", password);
+  // await page.type("#email-or-phone", logincred);
+  // await page.type("#password", password);
 
   process.stdout.write("Waiting to log in\n");
-  await page.waitForSelector("button[type=submit]");
-  process.stdout.write("Waiting for cookies. This can take some time...\n");
-  let currentURL = await page.mainFrame().url();
+  // await page.waitForSelector("button[type=submit]");
+  // process.stdout.write("Waiting for cookies. This can take some time...\n");
+  let currentURL = page.mainFrame().url();
 
   while (currentURL !== `${domainURL}/myworld`) {
-    await page.$eval("button[type=submit]", (elem) => elem.click());
-    currentURL = await page.mainFrame().url();
+    // await page.$eval("button[type=submit]", (elem) => elem.click());
+    currentURL = page.mainFrame().url();
   }
-  currentURL = await page.mainFrame().url();
+  currentURL = page.mainFrame().url();
   process.stdout.write(`Logged into ${currentURL}\n`);
   try {
     await page.waitForNavigation();
