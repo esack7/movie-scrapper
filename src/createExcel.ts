@@ -5,7 +5,7 @@ import { readPostFeedDataJSONFile } from "./utils.js";
 require("dotenv").config();
 
 const domainURL = process.env.DOMAINURL;
-const groupURL = process.env.GROUPURL;
+const groupURL = `/group/${process.env.GROUP}`;
 // This date calculation is used because excel doesn't handle dates w/timezone offsets.
 const systemTimeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 const offset = getTimezoneOffset(systemTimeZone);
