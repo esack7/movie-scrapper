@@ -32,8 +32,14 @@ interface CookieInterface {
   expires?: number;
   size?: number;
   httpOnly?: boolean;
+  sameSite?: string;
   secure?: boolean;
   session?: boolean;
+}
+
+interface CookieStringInterface {
+  cookieString?: string;
+  csrfToken?: string;
 }
 
 interface PostInterface {
