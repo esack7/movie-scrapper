@@ -25,4 +25,4 @@ await getCookies();
 
 Copy the resulting string and save it to COOKIES_STRINGIFIED in the .env file.
 
-To get the COOKIE_STRING, log into your account and navigate to the group page, open Developer Tools, under the Network tab, inspect the request for the 'postfeed' and select the headers tab and copy the cookie string under Request Headers. Past this string and save it to COOKIE_STRING in the .env file.
+To get the COOKIE_STRING, log into your account and navigate to the group page, open Developer Tools, under the Network tab, inspect the request for the 'postsfeed' and select the headers tab and copy the cookie string under Request Headers. Past this string and save it to COOKIE_STRING in the .env file.

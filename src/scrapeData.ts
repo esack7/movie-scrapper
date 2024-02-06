@@ -13,7 +13,7 @@ require("dotenv").config();
 const postURL = `/api/v3/group/${process.env.GROUP}/postsfeed`;
 const filePath: string = `./postFeedData.json`;
 
-export default async function (csrfToken: string, cookieString: string) {
+export default async function (cookies: Map<string, CookieInterface>) {
   let newURL = postURL;
   const postsFeedDataExists = await fileExists(filePath);
   const userObj = new Map<string, UserTrackingInterface>();
@@ -26,7 +26,7 @@ export default async function (csrfToken: string, cookieString: string) {
   for (let i = 0; i < 10; i++) {
     process.stdout.write(` .`);
     try {
-      const res = await makeGetRequest(newURL, cookieString, csrfToken);
+      const res = await makeGetRequest(newURL, cookies);
       const { users } = res;
       const feed = await formatFeed(res.feed);
       newURL = res._links.nextPage.href;

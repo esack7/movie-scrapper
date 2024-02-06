@@ -48,17 +48,28 @@ const deleteCookies = (path: string, fileName: string): Promise<void> =>
 
 const makeGetRequest = (
   postURL: string,
-  cookieString: string,
-  csrfToken: string
+  cookies: Map<string, CookieInterface>
 ): Promise<ResponseInterface> =>
   new Promise((resolve, reject) => {
+    const { cookieString, csrfToken } = getCookieString(cookies);
+    if (!cookieString || !csrfToken) {
+      return reject("Error parsing cookie string or csrfToken");
+    }
     client
       .get(domainURL + postURL)
       .set("Cookie", cookieString)
       .set("x-csrf-token", `${csrfToken}`)
       .then((res) => {
-        // TODO: update cookie.json file with cookies from response
-        // res.headers.set-cookie is an array of response cookies
+        const headersMap: Map<string, string | string[] | undefined> = new Map(
+          Object.entries(res.headers)
+        );
+        const headerCookiesValue = headersMap.get("set-cookie");
+        if (headerCookiesValue && typeof headerCookiesValue !== "string") {
+          headerCookiesValue.forEach((cookie: string) => {
+            const parsedCookie = parseCookieString(cookie);
+            cookies.set(parsedCookie.name, parsedCookie);
+          });
+        }
         resolve(res.body);
       })
       .catch((err) => {
@@ -76,16 +87,96 @@ const fileExists = (path: string): Promise<boolean> =>
     });
   });
 
-const readCookiesJSONFile = (path: string): Promise<Array<CookieInterface>> =>
+const readCookiesJSONFile = (
+  path: string
+): Promise<Map<string, CookieInterface>> =>
   new Promise((resolve, reject) => {
     readFile(path, (err, buf) => {
       if (err) {
         console.log(`There was an error reading json at ${path}.`);
         return reject(err);
       }
-      resolve(<Array<CookieInterface>>JSON.parse(buf.toString()));
+      // resolve(<Array<CookieInterface>>JSON.parse(buf.toString()));
+      const jsonData = <Array<CookieInterface>>JSON.parse(buf.toString());
+      const cookiesMap: Map<string, CookieInterface> = jsonData.reduce(
+        (map, cookie) => {
+          map.set(cookie.name, cookie);
+          return map;
+        },
+        new Map<string, CookieInterface>()
+      );
+      resolve(cookiesMap);
     });
   });
+
+const getCookieString = (
+  cookies: Map<string, CookieInterface>
+): CookieStringInterface => {
+  let csrfToken = "";
+  let cookieString = "";
+
+  cookies.forEach((ele) => {
+    if (ele.name === "csrf-token") {
+      csrfToken = ele.value;
+    }
+    cookieString += `${ele.name}=${ele.value};`;
+  });
+  return { cookieString, csrfToken };
+};
+
+const combineCookies = (
+  cookies: CookieInterface[],
+  cookieString: string
+): void => {
+  cookieString.split(";").forEach((cookie) => {
+    const trimmedCookie = cookie.trim();
+    const [name, value] = trimmedCookie.split("=");
+    if (!cookies.some((ele) => ele.name === name)) {
+      cookies.push({ name, value });
+    }
+    //TODO: update cookie properties if it already exists
+  });
+};
+
+const parseCookieString = (cookieString: string): CookieInterface => {
+  const cookieParts = cookieString.split("; ");
+  const cookieObj: CookieInterface = {
+    name: "",
+    value: "",
+  };
+
+  for (const part of cookieParts) {
+    const [key, val] = part.split("=").map((item) => item.trim());
+    switch (key.toLowerCase()) {
+      case "expires":
+        cookieObj.expires = Date.parse(val);
+        break;
+      case "domain":
+        cookieObj.domain = val;
+        break;
+      case "path":
+        cookieObj.path = val;
+        break;
+      case "secure":
+        cookieObj.secure = true;
+        break;
+      case "httponly":
+        cookieObj.httpOnly = true;
+        break;
+      case "samesite":
+        cookieObj.sameSite = val;
+        break;
+      default:
+        cookieObj.name = key;
+        cookieObj.value = val;
+    }
+  }
+
+  // Calculating size based on the length of name and value
+  // cookieObj.size = (cookieObj.name.length + cookieObj.value.length) * 2;
+
+  return cookieObj;
+};
 
 const readPostFeedDataJSONFile = (
   path: string
@@ -163,6 +254,9 @@ export {
   makeGetRequest,
   fileExists,
   readCookiesJSONFile,
+  getCookieString,
+  combineCookies,
+  parseCookieString,
   readPostFeedDataJSONFile,
   formatFeed,
   lineReader,
