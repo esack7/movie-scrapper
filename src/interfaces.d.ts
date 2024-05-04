@@ -59,6 +59,16 @@ interface PostInterface {
   follows: boolean;
 }
 
+interface FormattedPost {
+  text: string;
+  cost: number;
+  postItemId: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt?: Date | null;
+  editedAt?: Date | null;
+}
+
 interface UserInterface {
   id: string;
   name: string;
