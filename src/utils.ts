@@ -211,34 +211,34 @@ const readPostFeedDataJSONFile = (
     });
   });
 
-const formatFeed = async (feed: ResponseFeedItemInterface[]) => {
-  const formattedFeed = [];
-
-  const formatPost = (post: PostInterface) =>
-    post.text
-      .split("\n")
-      .map((ele) => {
-        const eleObject = {
-          text: ele,
-          cost: 0,
-          postItemId: post.postItemId,
-          userId: post.userId,
-          createdAt: parseJSON(post.createdAt * 1000),
-          updatedAt: post.updatedAt ? parseJSON(post.updatedAt * 1000) : null,
-          editedAt: post.editedAt ? parseJSON(post.editedAt * 1000) : null,
-        };
-        const splitMoney = ele.split("$");
-        if (splitMoney.length > 1) {
-          const detectedPrice = parseFloat(splitMoney[1].split(" ")[0]);
-          if (detectedPrice) {
-            eleObject.cost = detectedPrice;
-          }
+const formatPost = (post: PostInterface): FormattedPost[] =>
+  post.text
+    .split("\n")
+    .map((ele) => {
+      const eleObject = {
+        text: ele,
+        cost: 0,
+        postItemId: post.postItemId,
+        userId: post.userId,
+        createdAt: parseJSON(post.createdAt * 1000),
+        updatedAt: post.updatedAt ? parseJSON(post.updatedAt * 1000) : null,
+        editedAt: post.editedAt ? parseJSON(post.editedAt * 1000) : null,
+      };
+      const splitMoney = ele.split("$");
+      if (splitMoney.length > 1) {
+        const detectedPrice = parseFloat(splitMoney[1].split(" ")[0]);
+        if (detectedPrice) {
+          eleObject.cost = detectedPrice;
         }
-        eleObject.text = eleObject.text.replace(/[^a-z0-9 ]/gi, "").trim();
-        return eleObject;
-      })
-      .filter((obj) => !!obj.text.trim())
-      .filter((obj) => obj.text.indexOf("#") === -1);
+      }
+      eleObject.text = eleObject.text.replace(/[^a-z0-9 ]/gi, "").trim();
+      return eleObject;
+    })
+    .filter((obj) => !!obj.text.trim())
+    .filter((obj) => obj.text.indexOf("#") === -1);
+
+const formatFeed = async (feed: ResponseFeedItemInterface[]) => {
+  const formattedFeed: FormattedPost[][] = [];
 
   for (let i = 0; i < feed.length; i++) {
     const formattedPost = await formatPost(feed[i]);
@@ -259,5 +259,6 @@ export {
   parseCookieString,
   readPostFeedDataJSONFile,
   formatFeed,
+  formatPost,
   lineReader,
 };
